@@ -17,23 +17,23 @@ def verlet (pos_actual,pos_anterior, aceleracion,deltaT):
 def euler (pos_actual,vel_actual, aceleracion, deltaT):
 	return pos_actual+vel_actual*deltaT+0.5*aceleracion*deltaT**2
 
+def grafica(ejey):
+	plt.clf()
+	plt.ylim(-8,0)
+	plt.plot(0,ejey, color='red',marker='o', linestyle='None')
+	plt.pause(0.1)
+
+
 plt.ion()
 plt.figure()
-plt.ylim(-8,0)
-plt.plot(0,posy[-1], color='red',marker='o', linestyle='None')
-plt.pause(0.1)
+grafica(posy[-1])
 
 aceleracion=aceleracion_T(fgravedad,posy[-1])
 posy.append(euler(posy[-1],0,aceleracion,dt))
-plt.clf()
-plt.ylim(-8,0)
-plt.plot(0,posy[-1], color='red',marker='o', linestyle='None')
-plt.pause(0.1)
+grafica(posy[-1])
 
 for i in range(iteraciones):
 	aceleracion=aceleracion_T(fgravedad,posy[-1])
 	posy.append(verlet(posy[-1],posy[-2],aceleracion,dt))
-	plt.clf()
-	plt.ylim(-8,0)
-	plt.plot(0,posy[-1], color='red',marker='o', linestyle='None')
-	plt.pause(0.1)
+	grafica(posy[-1])
+

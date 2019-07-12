@@ -1,25 +1,39 @@
-import matplotlib.pyplot as plt 
-import numpy as np 
-import random 
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import style
+from functions import *
+style.use("classic")
 
-vel=np.array([2,0])
-pos_actualx=[0]
-pos_actualy=[50]	
-aceleracion=-9.8
-dt=0.1
+vel = np.array([2, 0])
+aceleration = np.array([0, -9.8])
+dt = 0.1
+Nsteps = 20
+pos_actual = np.zeros((Nsteps + 2, 2))
 
-def verlet (pos_actual,pos_anterior, aceleracion,deltaT):
-	return (2*pos_actual)-pos_anterior+aceleracion*deltaT**2
+pos_actual[0] = np.array([0, 50])
+pos_actual[1] = euler(pos_actual[0], vel, aceleration, dt)
 
-def euler (pos_actual,vel_actual, aceleracion, deltaT):
-	return pos_actual+vel_actual*deltaT+0.5*aceleracion*deltaT**2
+for i in range(2, Nsteps + 2):
+    pos_actual[i] = verlet(
+        pos_actual[i - 1], pos_actual[i - 2], aceleration, dt)
 
-pos_actualx.append(euler(pos_actualx,vel[0],0,dt))
-pos_actualy.append(euler(pos_actualy,vel[1],aceleracion,dt))
+time = np.arange(0, Nsteps + 2) * dt
+pos_actual = np.array(pos_actual)
 
-while pos_actualy[-1]>=0:
-	pos_actualx.append(verlet(pos_actualx[-1],pos_actualx[-2],0,dt))
-	pos_actualy.append(verlet(pos_actualy[-1],pos_actualy[-2],aceleracion,dt))
+x = pos_actual[0, 0] + vel[0] * time + aceleration[0] * time ** 2 / 2
+y = pos_actual[0, 1] + vel[1] * time + aceleration[1] * time ** 2 / 2
+
+# print(pos_actual)
+
 plt.figure()
-plt.plot(pos_actualx,pos_actualy,color="green",marker='o', linestyle='None')
-plt.show()
+plt.plot(pos_actual[:, 0], pos_actual[:, 1], "og", label="Verlet")
+plt.plot(x, y, "--r", label="Theoretical")
+plt.grid()
+plt.xlabel(r"$x \rm [m]$", fontsize=20)
+plt.ylabel(r"$y \rm [m]$", fontsize=20)
+plt.legend(loc="best")
+plt.title('Projectile motion', fontsize=30)
+plt.tight_layout()
+plt.savefig("parab_verlet.pdf")
+plt.close()

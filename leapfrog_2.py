@@ -1,52 +1,43 @@
 # LEAPFROG ALGORITHM
 
-import numpy
-from matplotlib import pyplot
+import numpy as np
+from matplotlib import pyplot as plt
+from functions import *
+from matplotlib import style
+style.use("classic")
 
 Nsteps = 50
-dt = 0.1 # s
-constant_k = 2.5 
+dt = 0.1  # s
+k = 1.5
+m = 1
+final_time = 15
+Nsteps = int(final_time / dt)
 
-velocities_half = numpy.zeros(shape=(Nsteps + 1, 2))
-positions = numpy.zeros(shape=(Nsteps + 1, 2))
-forces = numpy.zeros(shape=(Nsteps + 1, 2))
+velocities_half = np.zeros(shape=(Nsteps + 1))
+positions = np.zeros(shape=(Nsteps + 1))
+acelerations = np.zeros(shape=(Nsteps + 1))
 
-positions[0] = numpy.array([5, 0]) # m
-initial_velocity = numpy.array([0, 0]) # m / s
+positions[0] = 5  # m
+initial_velocity = 0.0  # m / s
 
-def force(constant_k, positions):
-    new_force = - constant_k * positions
-    return new_force
-
-# Euler method to get the update half a time velocity.
-
-def euler_method(velocity, new_force, dt):
-    velocity_half_time = velocity - 0.5 * new_force * dt
-    return velocity_half_time
-
-# Leapfrog algorithm to get the update position and update velocity.
-
-def leapfrog_integration(position, velocity_before, new_force, dt):
-    new_velocity_half = velocity_before + new_force * dt
-    new_position = position + new_velocity_half * dt
-    return new_velocity_half, new_position
-
-force_before = force(constant_k, positions[0])
-forces[0] = force_before
-velocity_before = euler_method(initial_velocity, force_before, dt)
-velocities_half[0] = velocity_before
-
+acelerations[0] = compute_spring_force(positions[0], k) / m
+velocities_half[0] = euler_velocity(initial_velocity, acelerations[0], dt)
 for i in range(1, Nsteps + 1):
-    velocities_half[i], positions[i] = leapfrog_integration(positions[i - 1], 
-    velocities_half[i - 1], forces[i - 1], dt)
-    forces[i] = force(constant_k, positions[i])
+    velocities_half[i], positions[i] = leapfrog_integration(
+        positions[i - 1], velocities_half[i - 1], acelerations[i - 1], dt)
+    acelerations[i] = compute_spring_force(positions[i], k) / m
 
-times = numpy.arange(Nsteps + 1) * dt
+times = np.arange(Nsteps + 1) * dt
+positions_teo = positions[0] * np.cos(times * np.sqrt(k / m))
 
-pyplot.figure()
-pyplot.plot(times, positions[:, 0], color='crimson', marker='*')
-pyplot.xlabel('$time$ (s)')
-pyplot.ylabel('$position_{x}$ (m)')
-pyplot.grid()
-pyplot.savefig('oscilator.pdf')
-pyplot.close()
+plt.figure()
+plt.plot(times, positions, '*g', label='Leapfrog')
+plt.plot(times, positions_teo, "--r", label='Theoretical')
+plt.legend(loc='best')
+plt.xlabel(r'$time \rm [s]$', fontsize=20)
+plt.ylabel(r'$x \rm [m]$', fontsize=20)
+plt.title('Spring-mass system', fontsize=30)
+plt.grid()
+plt.tight_layout()
+plt.savefig('oscilator.pdf')
+plt.close()
